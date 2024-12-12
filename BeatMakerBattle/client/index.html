@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DrumBeat</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" defer>
+    import { Chuck } from 'https://cdn.jsdelivr.net/npm/webchuck/+esm';
+
+    let theChuck;
+    let score = 0;
+    let lives = 3;
+    let beatTimeline = [];
+    let timerInterval;
+    let timeRemaining = 10;
+
+    // Initialize ChucK
+    async function initializeChucK() {
+      try {
+        theChuck = await Chuck.init([
+          { serverFilename: "./sounds/kick.wav", virtualFilename: "kick.wav" },
+          { serverFilename: "./sounds/snare.wav", virtualFilename: "snare.wav" },
+          { serverFilename: "./sounds/hihat.wav", virtualFilename: "hihat.wav" },
+          { serverFilename: "./sounds/clap.wav", virtualFilename: "clap.wav" },
+          { serverFilename: "./sounds/cowbell.wav", virtualFilename: "cowbell.wav" },
+          { serverFilename: "./sounds/tom.wav", virtualFilename: "tom.wav" },
+        ]);
+        console.log("ChucK initialized successfully!");
+
+        if (theChuck.context.state === "suspended") {
+          await theChuck.context.resume();
+          console.log("AudioContext resumed:", theChuck.context.state);
+        }
+      } catch (error) {
+        console.error("Error initializing ChucK:", error);
+      }
+    }
+
+    // Update score, lives, and timer in UI
+    function updateStats() {
+      document.getElementById("score").innerText = `Score: ${score}`;
+      document.getElementById("lives").innerText = `Lives: ${lives}`;
+      document.getElementById("timer").innerText = `Time: ${timeRemaining}s`;
+    }
+
+    // Generate a sequence of single sounds
+    function generateSequence(length) {
+      const sounds = ["kick", "snare", "hihat", "clap", "cowbell", "tom"];
+      beatTimeline = Array.from({ length }, () => sounds[Math.floor(Math.random() * sounds.length)]);
+    }
+
+    // Display the current sequence
+    function displaySequence() {
+      const sequenceDisplay = document.getElementById("sequence-display");
+      sequenceDisplay.innerHTML = ""; // Clear previous sequence
+      beatTimeline.forEach((sound) => {
+        const cue = document.createElement("div");
+        cue.classList.add("sequence-item");
+        cue.innerText = sound.toUpperCase();
+        sequenceDisplay.appendChild(cue);
+      });
+    }
+
+    // Start the timer
+    function startTimer() {
+      clearInterval(timerInterval); // Ensure no duplicate intervals
+      timeRemaining = 10; // Reset timer
+      updateStats();
+
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateStats();
+
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval); // Stop the timer
+          handleTimeOut();
+        }
+      }, 1000); // Update timer every second
+    }
+
+    // Handle timeout
+    function handleTimeOut() {
+      lives--;
+      updateStats();
+
+      if (lives <= 0) {
+        alert(`Game Over! Final Score: ${score}`);
+        resetGame();
+      } else {
+        alert("Time's up! Try again.");
+        regenerateCurrentLevel();
+      }
+    }
+
+    // Handle pad click events
+    function handlePadClick(sound) {
+      if (theChuck) {
+        console.log(`Playing sound with 0.1-second delay: ${sound}`);
+        const chuckCode = `
+          SndBuf buf => dac;
+          buf.read("${sound}.wav");
+          0.8 => buf.gain;          // Set gain
+          0 => buf.pos;           // Reset playback position
+          1::second => now;      // a little delay to ensure sound plays
+          buf.play();
+        `;
+        theChuck.runCode(chuckCode)
+          .then(() => console.log(`Played sound: ${sound}`))
+          .catch((error) => console.error("Error running ChucK code:", error));
+      } else {
+        console.error("ChucK is not initialized.");
+      }
+    }
+
+    // Check user input against the sequence
+    function checkInput(sound) {
+      const sequenceDisplay = document.getElementById("sequence-display");
+      const sequenceItems = sequenceDisplay.querySelectorAll(".sequence-item");
+
+      if (beatTimeline[0] === sound) {
+        // Mark correct input as green
+        sequenceItems[sequenceItems.length - beatTimeline.length].classList.add("correct");
+        beatTimeline.shift(); // Remove the matched sound
+        if (beatTimeline.length === 0) {
+          clearInterval(timerInterval); // Stop the timer
+          score++;
+          updateStats();
+          setTimeout(startNextLevel, 1000); // Start next level after 1 second
+        }
+      } else {
+        lives--;
+        updateStats();
+        if (lives <= 0) {
+          clearInterval(timerInterval);
+          alert(`Game Over! Final Score: ${score}`);
+          resetGame();
+        } else {
+          alert("Wrong input! Try again.");
+          regenerateCurrentLevel();
+        }
+      }
+    }
+
+    // Start the next level
+    function startNextLevel() {
+      const sequenceLength = score + 4; // Increase sequence length with each level
+      generateSequence(sequenceLength);
+      displaySequence();
+      startTimer();
+    }
+
+    // Regenerate the current level
+    function regenerateCurrentLevel() {
+      const sequenceLength = score + 4; // Increase sequence length with each level
+      generateSequence(sequenceLength);
+      displaySequence();
+      startTimer();
+    }
+
+    // Reset the game
+    function resetGame() {
+      clearInterval(timerInterval);
+      score = 0;
+      lives = 3;
+      updateStats();
+      startNextLevel();
+    }
+
+    // Attach event listeners for keyboard input
+    function attachKeyboardListeners() {
+      const keyToSoundMap = {
+        d: "kick",
+        f: "snare",
+        j: "hihat",
+        k: "clap",
+        i: "cowbell",
+        e: "tom",
+      };
+
+      document.addEventListener("keyup", (event) => {
+        const sound = keyToSoundMap[event.key.toLowerCase()];
+        if (sound) {
+          console.log(`Key pressed: ${event.key}, mapped to sound: ${sound}`);
+          handlePadClick(sound); // Attempt to play the sound
+          checkInput(sound); // Validate against the sequence
+        } else {
+          console.log(`Key pressed: ${event.key}, but no sound is mapped.`);
+        }
+      });
+    }
+
+    // Initialize game on DOM load
+    document.addEventListener("DOMContentLoaded", () => {
+      const startButton = document.createElement("button");
+      startButton.textContent = "Start Game";
+      startButton.id = "start-button";
+
+      startButton.addEventListener("click", async () => {
+        try {
+          console.log("Start button clicked");
+          await initializeChucK();
+          attachKeyboardListeners();
+          resetGame();
+          startButton.remove();
+          if (theChuck.context.state === "suspended") {
+            await theChuck.context.resume();
+            console.log("AudioContext resumed:", theChuck.context.state);
+          }
+        } catch (error) {
+          console.error("Error starting the game:", error);
+        }
+      });
+
+      document.body.prepend(startButton);
+    });
+  </script>
+  <style>
+    .sequence-item.correct {
+      background-color: green;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Drum Beat Game</h1>
+  <div id="stats">
+    <div id="score">Score: 0</div>
+    <div id="lives">Lives: 3</div>
+    <div id="timer">Time: 10s</div>
+  </div>  
+  <div id="sequence-display"></div>
+
+  <div id="instructions">
+    <p>Press the keys <strong>D</strong>, <strong>F</strong>, <strong>J</strong>, <strong>K</strong>, <strong>I</strong>, <strong>E</strong> to match the sequence!</p>
+  </div>  
+
+  <div id="drum-pad">
+    <div class="drum-pad-row">
+      <button class="pad" data-sound="tom" aria-label="Tom (E)">Tom<br><span class="key">E</span></button>
+      <button class="pad" data-sound="cowbell" aria-label="Cowbell (I)">Cowbell<br><span class="key">I</span></button>
+    </div>
+    <div class="drum-pad-row">
+      <button class="pad" data-sound="kick" aria-label="Kick (D)">Kick<br><span class="key">D</span></button>
+      <button class="pad" data-sound="snare" aria-label="Snare (F)">Snare<br><span class="key">F</span></button>
+      <button class="pad" data-sound="hihat" aria-label="Hi-Hat (J)">Hi-Hat<br><span class="key">J</span></button>
+      <button class="pad" data-sound="clap" aria-label="Clap (K)">Clap<br><span class="key">K</span></button>
+    </div>
+  </div>
+</body>
+
+</html>

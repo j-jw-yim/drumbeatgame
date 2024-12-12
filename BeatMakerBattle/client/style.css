@@ -1,0 +1,124 @@
+/* General Styles */
+body {
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #8e44ad, #e91e63);
+  color: #ffffff;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Prevent scrolling */
+}
+
+/* Header */
+header h1 {
+  font-size: 3em; /* Slightly larger font size */
+  margin: 10px 0; /* Added a slight margin */
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Start Button */
+#start-button {
+  margin: 10px auto; /* Slightly larger vertical spacing */
+  padding: 15px 25px; /* Increased padding */
+  font-size: 1.5em; /* Slightly larger font size */
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #c2185b;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 15px; /* More rounded corners */
+  cursor: pointer;
+  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+#start-button:hover {
+  background-color: #ff80ab;
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+/* Stats Section */
+#stats {
+  margin: 15px auto; /* Increased margin for vertical spacing */
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* Slightly larger gap */
+}
+
+.stat-item {
+  padding: 10px 15px; /* Slightly increased padding */
+  font-size: 1.4em; /* Larger font size */
+  color: #ff80ab;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Sequence Display */
+#sequence-display {
+  display: flex;
+  justify-content: center;
+  gap: 12px; /* Increased gap */
+  margin: 12px auto; /* Increased vertical spacing */
+}
+
+.sequence-item {
+  padding: 10px 15px; /* Increased padding */
+  font-size: 1.2em; /* Larger font size */
+  background-color: #ff80ab;
+  color: #ffffff;
+  border-radius: 12px;
+  text-transform: uppercase;
+  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Instructions */
+#instructions {
+  margin: 10px auto; /* Slightly larger vertical margin */
+  padding: 10px 15px; /* Increased padding */
+  font-size: 1.1em; /* Slightly larger font size */
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  max-width: 70%; /* Keep it centered and slightly wider */
+}
+
+/* Drum Pad */
+#drum-pad {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Increased gap */
+  margin: 15px auto; /* Slightly larger spacing */
+  justify-content: center;
+  align-items: center;
+}
+
+.drum-pad-row {
+  display: flex;
+  gap: 12px; /* Increased gap */
+}
+
+.pad {
+  padding: 20px 25px; /* Increased padding for larger buttons */
+  font-size: 1.3em; /* Larger font size */
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: #ffffff;
+  color: #c2185b;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.pad:hover {
+  background-color: #ff80ab;
+  color: #ffffff;
+  transform: scale(1.05);
+}
