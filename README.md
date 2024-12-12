@@ -48,7 +48,7 @@ The project explores key areas of interactive audio systems:
 3. Start playing!
 
 ## Project Links
-- [Interactive Web App](index.html)
+- [Interactive Web App](/client/index.html)
 - [Video Demonstration](demo.mp4)
 
 ## Acknowledgments
